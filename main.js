@@ -98,7 +98,7 @@ function drawShapeCanvas(startShape, initXform, ctx) {
   var primCount = 0;
   var pruneCount = 0;
 
-  var startMilliseconds = Date.now();
+  var startMilliseconds = performance.now();
   while (true) {
     if (queue.length == 0) {
       console.log('queue emptied');
@@ -152,7 +152,7 @@ function drawShapeCanvas(startShape, initXform, ctx) {
     queue = nextQueue;
     depth += 1;
   }
-  var elapsedTime = 0.001*(Date.now() - startMilliseconds);
+  var elapsedTime = 0.001*(performance.now() - startMilliseconds);
 
   console.log('primitives drawn:', primCount);
   console.log('branches pruned:', pruneCount);
