@@ -1,0 +1,17 @@
+{
+  "name": "context-freestyle",
+  "version": "0.0.0",
+  "description": "Context free grammar art in browser",
+  "main": "main.js",
+  "scripts": {
+    "build": "browserify main.js > bundle.js",
+    "watch": "watchify main.js -o bundle.js -v",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Russel Simmons",
+  "license": "MIT",
+  "devDependencies": {
+    "browserify": "^8.1.1",
+    "watchify": "^2.2.1"
+  }
+}
