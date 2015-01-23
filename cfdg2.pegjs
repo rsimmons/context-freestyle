@@ -44,14 +44,23 @@ shape_adjustment
   / ("size" / "s") ws+ scale:number { return {type: 'scale', x: scale, y: scale}; }
   / ("rotate" / "r") ws+ degrees:number { return {type: 'rotate', degrees: degrees}; }
   / ("flip" / "f") ws+ degrees:number { return {type: 'flip', degrees: degrees}; }
+  // TODO: skew, transform/trans
+  // TODO: color, targetted colors
 
 spaced_shape_adjustment
   = ws+ adj:shape_adjustment { return adj; }
 
+shape_adjustments_inner
+  = first_adj:shape_adjustment rest_adjs:spaced_shape_adjustment*
+  { return [first_adj].concat(rest_adjs); }
+
 shape_adjustments
   = "{" _ "}" { return { ordered: false, adjList: []}; }
-  / "{" _ first_adj:shape_adjustment rest_adjs:spaced_shape_adjustment* _ "}"
-    { return { ordered: false, adjList: [first_adj].concat(rest_adjs)}; }
+  / "{" _ adjList:shape_adjustments_inner _ "}"
+    { return { ordered: false, adjList: adjList}; }
+  / "[[" _ "]]" { return { ordered: true, adjList: []}; }
+  / "[[" _ adjList:shape_adjustments_inner _ "]]"
+    { return { ordered: true, adjList: adjList}; }
 
 shape_replacement
   = name:shapename _ adjustments:shape_adjustments _

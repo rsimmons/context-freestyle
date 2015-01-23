@@ -10,5 +10,6 @@ rule myruleB { bar {s 5} }\n\
 rule myruleB { bar {  s 6  } }\n\
 rule myruleB { bar {s 5 x 10} }\n\
 rule myruleB { bar {  size 5 x 10  } }\n\
+rule myruleB { bar [[s 5 x 10]] }\n\
 rule myruleB {}\n\
 '), {depth: null}));
