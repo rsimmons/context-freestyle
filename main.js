@@ -1,6 +1,7 @@
 'use strict';
 
 var vec2A = require('./vec2A');
+var cfdg2Importer = require('./importer/cfdg2');
 
 // based on this from http://blog.hvidtfeldts.net/index.php/2008/12/grammars-for-generative-art-part-ii/
 // order of xforms in rules is ignored, always made to be translate/rotate/scale/skew/flip

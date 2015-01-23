@@ -1,7 +1,7 @@
 var util = require('util');
-var cfdg2 = require('./cfdg2.js');
+var parser = require('./parser.js');
 
-console.log(util.inspect(cfdg2.parse('\
+console.log(util.inspect(parser.parse('\
 startshape foobar\n\
 size {s 10 23.3\n\
   x .42 y 0.9}\n\
