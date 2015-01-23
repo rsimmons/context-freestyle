@@ -6,12 +6,14 @@
   "scripts": {
     "build": "browserify main.js > bundle.js",
     "watch": "watchify main.js -o bundle.js -v",
+    "genparser": "pegjs cfdg2.pegjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Russel Simmons",
   "license": "MIT",
   "devDependencies": {
     "browserify": "^8.1.1",
+    "pegjs": "^0.8.0",
     "watchify": "^2.2.1"
   }
 }
