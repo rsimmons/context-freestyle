@@ -1,3 +1,5 @@
+// mostly based on this reference: http://contextfreeart.org/mediawiki/index.php/CFDG_HOWTO_v2
+
 start
   = grammarfile
 
