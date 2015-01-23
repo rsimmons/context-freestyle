@@ -35,7 +35,7 @@ testShape.push({
   prims: [null],
   nonprims: [
     {
-      xform: vec2A.mmMult(vec2A.mScale(0.99, 0.99), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mTrans(0, 1.2))),
+      xform: vec2A.mmMult(vec2A.mTrans(0, 1.2), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mScale(0.99, 0.99))),
       bMult: (1 - 0.009),
       bOff: 0.009,
       shape: testShape,
@@ -48,19 +48,19 @@ testShape.push({
   prims: [null],
   nonprims: [
     {
-      xform: vec2A.mmMult(vec2A.mScale(-0.9, 0.9), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mTrans(0, 1.2))),
+      xform: vec2A.mmMult(vec2A.mTrans(0, 1.2), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mScale(-0.9, 0.9))),
       bMult: 1,
       bOff: 0,
       shape: testShape,
     },
     {
-      xform: vec2A.mmMult(vec2A.mScale(0.8, 0.8), vec2A.mmMult(vec2A.mRotDeg(-60), vec2A.mTrans(1.2, 1.2))),
+      xform: vec2A.mmMult(vec2A.mTrans(1.2, 1.2), vec2A.mmMult(vec2A.mRotDeg(-60), vec2A.mScale(0.8, 0.8))),
       bMult: 1,
       bOff: 0,
       shape: testShape,
     },
     {
-      xform: vec2A.mmMult(vec2A.mScale(-0.6, 0.6), vec2A.mmMult(vec2A.mRotDeg(60), vec2A.mTrans(-1.2, 1.2))),
+      xform: vec2A.mmMult(vec2A.mTrans(-1.2, 1.2), vec2A.mmMult(vec2A.mRotDeg(60), vec2A.mScale(-0.6, 0.6))),
       bMult: 1,
       bOff: 0,
       shape: testShape,
@@ -99,7 +99,7 @@ function drawShapeCanvas(startShape, initXform, ctx) {
   var primCount = 0;
   var pruneCount = 0;
 
-  var startMilliseconds = Date.now();
+  var startMilliseconds = performance.now();
   while (true) {
     if (queue.length == 0) {
       console.log('queue emptied');
@@ -153,7 +153,7 @@ function drawShapeCanvas(startShape, initXform, ctx) {
     queue = nextQueue;
     depth += 1;
   }
-  var elapsedTime = 0.001*(Date.now() - startMilliseconds);
+  var elapsedTime = 0.001*(performance.now() - startMilliseconds);
 
   console.log('primitives drawn:', primCount);
   console.log('branches pruned:', pruneCount);
