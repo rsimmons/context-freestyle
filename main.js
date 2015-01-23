@@ -23,13 +23,22 @@ rule SEED1 0.04 {
 // {{1, 0, 0}, {0, 1, 1.2}, {0, 0, 1}} . {{0.999657, -0.0262, 0}, {0.0262, 0.999657, 0}, {0, 0, 1}} . {{0.99, 0, 0}, {0, 0.99, 0}, {0, 0, 1}}
 // {{1, 0, 0}, {0, 1, 1.2}, {0, 0, 1}} . {{cos(1.5*π/180), -sin(1.5*π/180)}, {sin(1.5*π/180), cos(1.5*π/180)}} . {{0.99, 0, 0}, {0, 0.99, 0}, {0, 0, 1}}
 
+// formulas for transforming CFDG brightness values to ours, where b is CDFG value:
+// bMult = (1 - b)
+// bOff = b > 0 ? b : 0
+
 var testShape = [];
 
 testShape.push({
   weight: 1,
   prims: [null],
   nonprims: [
-    {xform: vec2A.mmMult(vec2A.mScale(0.99, 0.99), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mTrans(0, 1.2))), shape: testShape},
+    {
+      xform: vec2A.mmMult(vec2A.mScale(0.99, 0.99), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mTrans(0, 1.2))),
+      bMult: (1 - 0.009),
+      bOff: 0.009,
+      shape: testShape,
+    },
   ],
 });
 
@@ -37,9 +46,24 @@ testShape.push({
   weight: 0.04,
   prims: [null],
   nonprims: [
-    {xform: vec2A.mmMult(vec2A.mScale(-0.9, 0.9), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mTrans(0, 1.2))), shape: testShape},
-    {xform: vec2A.mmMult(vec2A.mScale(0.8, 0.8), vec2A.mmMult(vec2A.mRotDeg(-60), vec2A.mTrans(1.2, 1.2))), shape: testShape},
-    {xform: vec2A.mmMult(vec2A.mScale(-0.6, 0.6), vec2A.mmMult(vec2A.mRotDeg(60), vec2A.mTrans(-1.2, 1.2))), shape: testShape},
+    {
+      xform: vec2A.mmMult(vec2A.mScale(-0.9, 0.9), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mTrans(0, 1.2))),
+      bMult: 1,
+      bOff: 0,
+      shape: testShape,
+    },
+    {
+      xform: vec2A.mmMult(vec2A.mScale(0.8, 0.8), vec2A.mmMult(vec2A.mRotDeg(-60), vec2A.mTrans(1.2, 1.2))),
+      bMult: 1,
+      bOff: 0,
+      shape: testShape,
+    },
+    {
+      xform: vec2A.mmMult(vec2A.mScale(-0.6, 0.6), vec2A.mmMult(vec2A.mRotDeg(60), vec2A.mTrans(-1.2, 1.2))),
+      bMult: 1,
+      bOff: 0,
+      shape: testShape,
+    },
   ],
 });
 
@@ -63,6 +87,7 @@ function drawShapeCanvas(startShape, initXform, ctx) {
 
   var initState = {
     xform: initXform,
+    brightness: 0,
   };
   var queue = [{
     state: initState,
@@ -96,6 +121,8 @@ function drawShapeCanvas(startShape, initXform, ctx) {
         // TODO: ctx.save(), apply transform for this prim
         // TODO: draw r.prims[j]
         // HACK: for now, always just draw an un-transformed unit square
+        var b = Math.floor(255*q.state.brightness);
+        ctx.fillStyle = 'rgb(' + b + ', ' + b + ', ' + b + ');';
         ctx.fillRect(-0.5, -0.5, 1, 1);
         primCount += 1;
         // TODO: ctx.restore()
@@ -105,8 +132,16 @@ function drawShapeCanvas(startShape, initXform, ctx) {
         var np = r.nonprims[j];
         var combinedXform = vec2A.mmMult(q.state.xform, np.xform);
 
-        if (vec2A.mNormSq(combinedXform) > 0.5) {
-          nextQueue.push({state: {xform: combinedXform}, shape: np.shape});
+        if (vec2A.mNormSq(combinedXform) > 0.3) {
+          var newState = {
+            xform: combinedXform,
+            brightness: np.bMult*q.state.brightness + np.bOff,
+          };
+
+          nextQueue.push({
+            state: newState,
+            shape: np.shape,
+          });
         } else {
           pruneCount += 1;
         }
@@ -126,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var ctx = canvas.getContext('2d');
 
   ctx.strokeStyle = 'none';
-  ctx.fillStyle = 'black';
+  // ctx.fillStyle = 'black';
 
   var initXform = vec2A.mmMult(vec2A.mTrans(0.5*canvas.width, canvas.height), vec2A.mScale(5, -5));
 
