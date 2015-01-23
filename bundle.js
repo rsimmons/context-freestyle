@@ -99,6 +99,7 @@ function drawShapeCanvas(startShape, initXform, ctx) {
   var primCount = 0;
   var pruneCount = 0;
 
+  var startMilliseconds = Date.now();
   while (true) {
     if (queue.length == 0) {
       console.log('queue emptied');
@@ -152,12 +153,14 @@ function drawShapeCanvas(startShape, initXform, ctx) {
     queue = nextQueue;
     depth += 1;
   }
+  var elapsedTime = 0.001*(Date.now() - startMilliseconds);
 
   console.log('primitives drawn:', primCount);
   console.log('branches pruned:', pruneCount);
+  console.log('primitives per second:', Math.floor(primCount/elapsedTime));
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+function redraw() {
   var canvas = document.getElementById('canvas');
   var ctx = canvas.getContext('2d');
 
@@ -167,6 +170,14 @@ document.addEventListener('DOMContentLoaded', function() {
   var initXform = vec2A.mmMult(vec2A.mTrans(0.5*canvas.width, canvas.height), vec2A.mScale(5, -5));
 
   drawShapeCanvas(testShape, initXform, ctx);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  redraw();
+});
+
+document.addEventListener('click', function() {
+  redraw();
 });
 
 },{"./vec2A":"/Users/russ/Projects/context-freestyle/vec2A.js"}],"/Users/russ/Projects/context-freestyle/vec2A.js":[function(require,module,exports){
