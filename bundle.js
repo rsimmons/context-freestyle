@@ -3,7 +3,7 @@
 
 var parser = require('./parser')
 
-function loadGrammar(grammarStr) {
+function importGrammar(grammarStr) {
   var parseResult = parser.parse(grammarStr);
 
   var warnings = [];
@@ -36,7 +36,7 @@ function loadGrammar(grammarStr) {
 }
 
 module.exports = {
-  loadGrammar: loadGrammar,
+  importGrammar: importGrammar,
 };
 
 },{"./parser":"/Users/russ/Projects/context-freestyle/importer/cfdg2/parser.js"}],"/Users/russ/Projects/context-freestyle/importer/cfdg2/parser.js":[function(require,module,exports){

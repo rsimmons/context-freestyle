@@ -2,7 +2,7 @@
 
 var parser = require('./parser')
 
-function loadGrammar(grammarStr) {
+function importGrammar(grammarStr) {
   var parseResult = parser.parse(grammarStr);
 
   var warnings = [];
@@ -35,5 +35,5 @@ function loadGrammar(grammarStr) {
 }
 
 module.exports = {
-  loadGrammar: loadGrammar,
+  importGrammar: importGrammar,
 };
