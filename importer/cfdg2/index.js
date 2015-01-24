@@ -28,14 +28,13 @@ function importGrammar(grammarStr) {
     var thing = parseResult[i];
 
     if (thing.type === 'shaperule') {
-      ruleObj = {
+      var ruleObj = {
         weight: thing.weight,
         prims: [],
         nonprims: [],
       }
 
-      // TODO: fill prims and nonprims from thing.replacements.
-      // TODO: instead of .shape properties use .shapeName for now, will resolve later
+      // fill prims and nonprims from thing.replacements.
       for (var j = 0; j < thing.replacements.length; j++) {
         var rep = thing.replacements[j];
 
@@ -81,7 +80,22 @@ function importGrammar(grammarStr) {
   }
 
   // resolve name refs to make final grammar obj
-  // TODO: I think we can just modify shapeNameRules in-place, resolving name refs
+  for (var sn in shapeNameRules) {
+    if (shapeNameRules.hasOwnProperty(sn)) {
+      for (var i = 0; i < shapeNameRules[sn].length; i++) {
+        for (var j = 0; j < shapeNameRules[sn][i].nonprims.length; j++) {
+          var np = shapeNameRules[sn][i].nonprims[j];
+
+          if (!shapeNameRules.hasOwnProperty(np.shapeName)) {
+            // TODO: throw better error
+            throw "Referenced shape name not found";
+          }
+
+          np.shape = shapeNameRules[np.shapeName];
+        }
+      }
+    }
+  }
 
   if (!shapeNameRules.hasOwnProperty(startShapeName)) {
     // TODO: throw better error
