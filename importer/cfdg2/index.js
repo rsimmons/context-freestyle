@@ -1,6 +1,18 @@
 'use strict';
 
 var parser = require('./parser')
+var primTypes = require('../../primTypes');
+
+var primNameType = {
+  'SQUARE': primTypes.SQUARE,
+  'CIRCLE': primTypes.CIRCLE,
+  'TRIANGLE': primTypes.TRIANGLE,
+};
+
+// map adjustments from parsed form to internal form
+function mapAdjustments(adjustments) {
+  // TODO
+}
 
 function importGrammar(grammarStr) {
   var parseResult = parser.parse(grammarStr);
@@ -24,6 +36,23 @@ function importGrammar(grammarStr) {
 
       // TODO: fill prims and nonprims from thing.replacements.
       // TODO: instead of .shape properties use .shapeName for now, will resolve later
+      for (var j = 0; j < thing.replacements.length; j++) {
+        var rep = thing.replacements[j];
+
+        if (primNameType.hasOwnProperty(rep.name)) {
+          // replacement is a primitive shape
+          ruleObj.prims.push({
+            adjs: mapAdjustments(rep.adjustments),
+            primType: primNameType[rep.name],
+          });
+        } else {
+          // replacement must be a non-primitive shape
+          ruleObj.nonprims.push({
+            adjs: mapAdjustments(rep.adjustments),
+            shapeName: rep.name, // this is temporary, we resolve name to actual object later
+          });
+        }
+      }
 
       // create list of rules for shape name if none yet
       if (!shapeNameRules.hasOwnProperty(thing.name)) {

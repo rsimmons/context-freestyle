@@ -35,9 +35,11 @@ testShape.push({
   prims: [null],
   nonprims: [
     {
-      xform: vec2A.mmMult(vec2A.mTrans(0, 1.2), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mScale(0.99, 0.99))),
-      bMult: (1 - 0.009),
-      bOff: 0.009,
+      adjs: {
+        xform: vec2A.mmMult(vec2A.mTrans(0, 1.2), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mScale(0.99, 0.99))),
+        bMult: (1 - 0.009),
+        bOff: 0.009,
+      },
       shape: testShape,
     },
   ],
@@ -48,21 +50,27 @@ testShape.push({
   prims: [null],
   nonprims: [
     {
-      xform: vec2A.mmMult(vec2A.mTrans(0, 1.2), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mScale(-0.9, 0.9))),
-      bMult: 1,
-      bOff: 0,
+      adjs: {
+        xform: vec2A.mmMult(vec2A.mTrans(0, 1.2), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mScale(-0.9, 0.9))),
+        bMult: 1,
+        bOff: 0,
+      },
       shape: testShape,
     },
     {
-      xform: vec2A.mmMult(vec2A.mTrans(1.2, 1.2), vec2A.mmMult(vec2A.mRotDeg(-60), vec2A.mScale(0.8, 0.8))),
-      bMult: 1,
-      bOff: 0,
+      adjs: {
+        xform: vec2A.mmMult(vec2A.mTrans(1.2, 1.2), vec2A.mmMult(vec2A.mRotDeg(-60), vec2A.mScale(0.8, 0.8))),
+        bMult: 1,
+        bOff: 0,
+      },
       shape: testShape,
     },
     {
-      xform: vec2A.mmMult(vec2A.mTrans(-1.2, 1.2), vec2A.mmMult(vec2A.mRotDeg(60), vec2A.mScale(-0.6, 0.6))),
-      bMult: 1,
-      bOff: 0,
+      adjs: {
+        xform: vec2A.mmMult(vec2A.mTrans(-1.2, 1.2), vec2A.mmMult(vec2A.mRotDeg(60), vec2A.mScale(-0.6, 0.6))),
+        bMult: 1,
+        bOff: 0,
+      },
       shape: testShape,
     },
   ],
@@ -124,7 +132,7 @@ function drawShapeCanvas(startShape, initXform, ctx) {
         // TODO: draw r.prims[j]
         // HACK: for now, always just draw an un-transformed unit square
         var b = Math.floor(255*q.state.brightness);
-        ctx.fillStyle = 'rgb(' + b + ', ' + b + ', ' + b + ');';
+        ctx.fillStyle = 'rgb(x,x,x)'.replace(/x/g, b.toString()); // faster than building with +
         ctx.fillRect(-0.5, -0.5, 1, 1);
         primCount += 1;
         // TODO: ctx.restore()
@@ -132,12 +140,13 @@ function drawShapeCanvas(startShape, initXform, ctx) {
 
       for (var j = 0; j < r.nonprims.length; j++) {
         var np = r.nonprims[j];
-        var combinedXform = vec2A.mmMult(q.state.xform, np.xform);
+        var adjs = np.adjs;
+        var combinedXform = vec2A.mmMult(q.state.xform, adjs.xform);
 
         if (vec2A.mNormSq(combinedXform) > 0.3) {
           var newState = {
             xform: combinedXform,
-            brightness: np.bMult*q.state.brightness + np.bOff,
+            brightness: adjs.bMult*q.state.brightness + adjs.bOff,
           };
 
           nextQueue.push({
