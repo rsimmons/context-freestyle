@@ -3,6 +3,8 @@
 
 var parser = require('./parser')
 var primTypes = require('../../primTypes');
+var state = require('../../state');
+var vec2A = require('../../vec2A');
 
 var primNameType = {
   'SQUARE': primTypes.SQUARE,
@@ -10,9 +12,98 @@ var primNameType = {
   'TRIANGLE': primTypes.TRIANGLE,
 };
 
-// map adjustments from parsed form to internal form
-function mapAdjustments(adjustments) {
-  // TODO
+// map adjustments from parsed form to internal form, a single combination of all adjustments
+function mapAdjustments(parsedAdjustments) {
+  var adjs = parsedAdjustments.adjList;
+
+  console.log('ADJS START', adjs);
+
+  // expando any multi-translation adjustments
+  var newAdjs = [];
+  for (var i = 0; i < adjs.length; i++) {
+    var a = adjs[i];
+    if (a.type === 'xyzTrans') {
+      newAdjs.push({type: 'xTrans', x: a.x});
+      newAdjs.push({type: 'yTrans', y: a.y});
+      newAdjs.push({type: 'zTrans', z: a.z});
+    } else if (a.type === 'xyTrans') {
+      newAdjs.push({type: 'xTrans', x: a.x});
+      newAdjs.push({type: 'yTrans', y: a.y});
+    } else {
+      newAdjs.push(a);
+    }
+  }
+  adjs = newAdjs;
+
+  console.log('ADJS NOW', adjs);
+
+  if (!parsedAdjustments.ordered) {
+    // only keep first adjustment of each type
+    var newAdjs = [];
+    var seenAdjTypes = {};
+    for (var i = 0; i < adjs.length; i++) {
+      var at = adjs[i].type;
+      if (!seenAdjTypes.hasOwnProperty(at)) {
+        newAdjs.push(adjs[i]);
+        seenAdjTypes[at] = null;
+      } else {
+        // TODO: better info
+        warnings.push('ignored adjustment');
+      }
+    }
+    adjs = newAdjs;
+
+    // sort adjustments into canonical order: translate/rotate/scale/skew/flip
+    var ADJ_TYPE_ORDER = {
+      'xTrans': 1,
+      'yTrans': 2,
+      'zTrans': 3,
+      'rotate': 4,
+      'scale': 5,
+      'skew': 6,
+      'flip': 7,
+    };
+
+    var taggedAdjs = [];
+    for (var i = 0; i < adjs.length; i++) {
+      taggedAdjs.push([ADJ_TYPE_ORDER[adjs[i].type], adjs[i]]);
+    }
+    taggedAdjs.sort();
+
+    var newAdjs = [];
+    for (var i = 0; i < taggedAdjs.length; i++) {
+      newAdjs.push(taggedAdjs[i][1]);
+    }
+    adjs = newAdjs;
+  }
+
+  // combine adjustments
+  var accum = state.adjIdent();
+
+  console.log('ADJS END', adjs);
+  for (var i = 0; i < adjs.length; i++) {
+    // TODO: convert adjs[i] into internal adjustment object a
+    var a = adjs[i];
+    var r = state.adjIdent();
+    if (a.type === 'xTrans') {
+      r.xform = vec2A.mTrans(a.x, 0);
+    } else if (a.type === 'yTrans') {
+      r.xform = vec2A.mTrans(0, a.y);
+    } else if (a.type === 'zTrans') {
+      throw 'z coords not supported yet';
+    } else if (a.type === 'rotate') {
+      r.xform = vec2A.mRotDeg(a.degrees);
+    } else if (a.type === 'scale') {
+      r.xform = vec2A.mScale(a.x, a.y);
+    } else if (a.type === 'flip') {
+      // scale times rotate
+      r.xform = vec2A.mmMult(vec2A.mScale(1, -1), vec2A.mRotDeg(a.degrees));
+    }
+
+    accum = state.adjCombine(accum, r);
+  }
+
+  return accum;
 }
 
 function importGrammar(grammarStr) {
@@ -42,13 +133,13 @@ function importGrammar(grammarStr) {
         if (primNameType.hasOwnProperty(rep.name)) {
           // replacement is a primitive shape
           ruleObj.prims.push({
-            adjs: mapAdjustments(rep.adjustments),
+            adj: mapAdjustments(rep.adjustments),
             primType: primNameType[rep.name],
           });
         } else {
           // replacement must be a non-primitive shape
           ruleObj.nonprims.push({
-            adjs: mapAdjustments(rep.adjustments),
+            adj: mapAdjustments(rep.adjustments),
             shapeName: rep.name, // this is temporary, we resolve name to actual object later
           });
         }
@@ -71,13 +162,13 @@ function importGrammar(grammarStr) {
       // TODO
     } else {
       // TODO: throw better error
-      throw "Unrecognized top-level thing";
+      throw 'Unrecognized top-level thing';
     }
   }
 
   if (!startShapeName) {
     // TODO: throw better error
-    throw "No startshape directive found";
+    throw 'No startshape directive found';
   }
 
   // resolve name refs to make final grammar obj
@@ -89,7 +180,7 @@ function importGrammar(grammarStr) {
 
           if (!shapeNameRules.hasOwnProperty(np.shapeName)) {
             // TODO: throw better error
-            throw "Referenced shape name not found";
+            throw 'Referenced shape name not found';
           }
 
           np.shape = shapeNameRules[np.shapeName];
@@ -100,7 +191,7 @@ function importGrammar(grammarStr) {
 
   if (!shapeNameRules.hasOwnProperty(startShapeName)) {
     // TODO: throw better error
-    throw "Name specified by startshape directive not found";
+    throw 'Name specified by startshape directive not found';
   }
 
   var grammar = {
@@ -118,7 +209,7 @@ module.exports = {
   importGrammar: importGrammar,
 };
 
-},{"../../primTypes":"/Users/russ/Projects/context-freestyle/primTypes.js","./parser":"/Users/russ/Projects/context-freestyle/importer/cfdg2/parser.js"}],"/Users/russ/Projects/context-freestyle/importer/cfdg2/parser.js":[function(require,module,exports){
+},{"../../primTypes":"/Users/russ/Projects/context-freestyle/primTypes.js","../../state":"/Users/russ/Projects/context-freestyle/state.js","../../vec2A":"/Users/russ/Projects/context-freestyle/vec2A.js","./parser":"/Users/russ/Projects/context-freestyle/importer/cfdg2/parser.js"}],"/Users/russ/Projects/context-freestyle/importer/cfdg2/parser.js":[function(require,module,exports){
 module.exports = (function() {
   /*
    * Generated by PEG.js 0.8.0.
@@ -1987,7 +2078,7 @@ testShape.push({
   prims: [null],
   nonprims: [
     {
-      adjs: {
+      adj: {
         xform: vec2A.mmMult(vec2A.mTrans(0, 1.2), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mScale(0.99, 0.99))),
         bMult: (1 - 0.009),
         bOff: 0.009,
@@ -2002,7 +2093,7 @@ testShape.push({
   prims: [null],
   nonprims: [
     {
-      adjs: {
+      adj: {
         xform: vec2A.mmMult(vec2A.mTrans(0, 1.2), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mScale(-0.9, 0.9))),
         bMult: 1,
         bOff: 0,
@@ -2010,7 +2101,7 @@ testShape.push({
       shape: testShape,
     },
     {
-      adjs: {
+      adj: {
         xform: vec2A.mmMult(vec2A.mTrans(1.2, 1.2), vec2A.mmMult(vec2A.mRotDeg(-60), vec2A.mScale(0.8, 0.8))),
         bMult: 1,
         bOff: 0,
@@ -2018,7 +2109,7 @@ testShape.push({
       shape: testShape,
     },
     {
-      adjs: {
+      adj: {
         xform: vec2A.mmMult(vec2A.mTrans(-1.2, 1.2), vec2A.mmMult(vec2A.mRotDeg(60), vec2A.mScale(-0.6, 0.6))),
         bMult: 1,
         bOff: 0,
@@ -2092,13 +2183,13 @@ function drawShapeCanvas(startShape, initXform, ctx) {
 
       for (var j = 0; j < r.nonprims.length; j++) {
         var np = r.nonprims[j];
-        var adjs = np.adjs;
-        var combinedXform = vec2A.mmMult(q.state.xform, adjs.xform);
+        var adj = np.adj;
+        var combinedXform = vec2A.mmMult(q.state.xform, adj.xform);
 
         if (vec2A.mNormSq(combinedXform) > 0.3) {
           var newState = {
             xform: combinedXform,
-            brightness: adjs.bMult*q.state.brightness + adjs.bOff,
+            brightness: adj.bMult*q.state.brightness + adj.bOff,
           };
 
           nextQueue.push({
@@ -2150,7 +2241,30 @@ module.exports = {
   TRIANGLE: 3,
 };
 
-},{}],"/Users/russ/Projects/context-freestyle/vec2A.js":[function(require,module,exports){
+},{}],"/Users/russ/Projects/context-freestyle/state.js":[function(require,module,exports){
+ 'use strict';
+
+var vec2A = require('./vec2A');
+
+module.exports = {
+  adjIdent: function() {
+    return {
+      xform: vec2A.mIdent(),
+      bMult: 1,
+      bOff: 0,
+    };
+  },
+
+  adjCombine: function(a, b) {
+    return {
+      xform: vec2A.mmMult(a.xform, b.xform),
+      bMult: a.bMult*b.bMult,
+      bOff: a.bMult*b.bOff + a.bOff,
+    };
+  },
+};
+
+},{"./vec2A":"/Users/russ/Projects/context-freestyle/vec2A.js"}],"/Users/russ/Projects/context-freestyle/vec2A.js":[function(require,module,exports){
 'use strict';
 
 module.exports = {

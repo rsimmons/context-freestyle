@@ -35,7 +35,7 @@ testShape.push({
   prims: [null],
   nonprims: [
     {
-      adjs: {
+      adj: {
         xform: vec2A.mmMult(vec2A.mTrans(0, 1.2), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mScale(0.99, 0.99))),
         bMult: (1 - 0.009),
         bOff: 0.009,
@@ -50,7 +50,7 @@ testShape.push({
   prims: [null],
   nonprims: [
     {
-      adjs: {
+      adj: {
         xform: vec2A.mmMult(vec2A.mTrans(0, 1.2), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mScale(-0.9, 0.9))),
         bMult: 1,
         bOff: 0,
@@ -58,7 +58,7 @@ testShape.push({
       shape: testShape,
     },
     {
-      adjs: {
+      adj: {
         xform: vec2A.mmMult(vec2A.mTrans(1.2, 1.2), vec2A.mmMult(vec2A.mRotDeg(-60), vec2A.mScale(0.8, 0.8))),
         bMult: 1,
         bOff: 0,
@@ -66,7 +66,7 @@ testShape.push({
       shape: testShape,
     },
     {
-      adjs: {
+      adj: {
         xform: vec2A.mmMult(vec2A.mTrans(-1.2, 1.2), vec2A.mmMult(vec2A.mRotDeg(60), vec2A.mScale(-0.6, 0.6))),
         bMult: 1,
         bOff: 0,
@@ -140,13 +140,13 @@ function drawShapeCanvas(startShape, initXform, ctx) {
 
       for (var j = 0; j < r.nonprims.length; j++) {
         var np = r.nonprims[j];
-        var adjs = np.adjs;
-        var combinedXform = vec2A.mmMult(q.state.xform, adjs.xform);
+        var adj = np.adj;
+        var combinedXform = vec2A.mmMult(q.state.xform, adj.xform);
 
         if (vec2A.mNormSq(combinedXform) > 0.3) {
           var newState = {
             xform: combinedXform,
-            brightness: adjs.bMult*q.state.brightness + adjs.bOff,
+            brightness: adj.bMult*q.state.brightness + adj.bOff,
           };
 
           nextQueue.push({
