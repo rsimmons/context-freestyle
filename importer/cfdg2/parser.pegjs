@@ -12,9 +12,9 @@ _ "optional whitespace run"
   = ws*
 
 number
-  = [1-9] [0-9]* "." [0-9]* { return parseFloat(text()); }
-  / [1-9] [0-9]* { return parseFloat(text()); }
-  / "0"? "." [0-9]* { return parseFloat(text()); }
+  = "-"? [1-9] [0-9]* "." [0-9]* { return parseFloat(text()); }
+  / "-"? [1-9] [0-9]* { return parseFloat(text()); }
+  / "-"? "0"? "." [0-9]* { return parseFloat(text()); }
 
 shapename
   = [_a-z]i [_a-z0-9]i* { return text(); }

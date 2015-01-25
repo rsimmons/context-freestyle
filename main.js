@@ -76,6 +76,23 @@ testShape.push({
   ],
 });
 
+testShape = cfdg2Importer.importGrammar('\
+startshape SEED1\n\
+\n\
+rule SEED1 {\n\
+ SQUARE{}\n\
+ SEED1 {y 1.2 size 0.99 rotate 1.5}\n\
+}\n\
+\n\
+rule SEED1 0.04 {\n\
+ SQUARE{}\n\
+ SEED1 {y 1.2 s 0.9 r 1.5 flip 90}\n\
+ SEED1 {y 1.2 x 1.2 s 0.8 r -60}\n\
+ SEED1 {y 1.2 x -1.2 s 0.6 r 60  flip 90}\n\
+}\n\
+').grammar.startShape;
+console.log(testShape);
+
 function pickRule(shape) {
   var total = 0;
   for (var i = 0; i < shape.length; i++) {
