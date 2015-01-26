@@ -81,7 +81,7 @@ startshape SEED1\n\
 \n\
 rule SEED1 {\n\
  SQUARE{}\n\
- SEED1 {y 1.2 size 0.99 rotate 1.5}\n\
+ SEED1 {y 1.2 size 0.99 rotate 1.5 brightness 0.009}\n\
 }\n\
 \n\
 rule SEED1 0.04 {\n\

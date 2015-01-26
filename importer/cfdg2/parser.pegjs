@@ -46,6 +46,7 @@ shape_adjustment
   / ("size" / "s") ws+ scale:number { return {type: 'scale', x: scale, y: scale}; }
   / ("rotate" / "r") ws+ degrees:number { return {type: 'rotate', degrees: degrees}; }
   / ("flip" / "f") ws+ degrees:number { return {type: 'flip', degrees: degrees}; }
+  / ("brightness" / "b") ws+ amount:number { return {type: 'brightness', amount: amount}; }
   // TODO: skew, transform/trans
   // TODO: color, targetted colors
 

@@ -91,6 +91,9 @@ function mapAdjustments(parsedAdjustments) {
     } else if (a.type === 'flip') {
       // rotate, flip, rotate back
       r.xform = vec2A.mmMult(vec2A.mRotDeg(-a.degrees), vec2A.mmMult(vec2A.mScale(1, -1), vec2A.mRotDeg(a.degrees)));
+    } else if (a.type === 'brightness') {
+      r.bMult = 1 - a.amount;
+      r.bOff = a.amount > 0 ? a.amount : 0;
     } else {
       throw 'Unhandled adjustment type ' + a.type;
     }
