@@ -15,8 +15,6 @@ var primNameType = {
 function mapAdjustments(parsedAdjustments) {
   var adjs = parsedAdjustments.adjList;
 
-  console.log('ADJS START', adjs);
-
   // expando any multi-translation adjustments
   var newAdjs = [];
   for (var i = 0; i < adjs.length; i++) {
@@ -33,8 +31,6 @@ function mapAdjustments(parsedAdjustments) {
     }
   }
   adjs = newAdjs;
-
-  console.log('ADJS NOW', adjs);
 
   if (!parsedAdjustments.ordered) {
     // only keep first adjustment of each type
@@ -79,9 +75,7 @@ function mapAdjustments(parsedAdjustments) {
   // combine adjustments
   var accum = state.adjIdent();
 
-  console.log('ADJS END', adjs);
   for (var i = 0; i < adjs.length; i++) {
-    // TODO: convert adjs[i] into internal adjustment object a
     var a = adjs[i];
     var r = state.adjIdent();
     if (a.type === 'xTrans') {
@@ -95,11 +89,14 @@ function mapAdjustments(parsedAdjustments) {
     } else if (a.type === 'scale') {
       r.xform = vec2A.mScale(a.x, a.y);
     } else if (a.type === 'flip') {
-      // scale times rotate
-      r.xform = vec2A.mmMult(vec2A.mScale(1, -1), vec2A.mRotDeg(a.degrees));
+      // rotate, flip, rotate back
+      r.xform = vec2A.mmMult(vec2A.mRotDeg(-a.degrees), vec2A.mmMult(vec2A.mScale(1, -1), vec2A.mRotDeg(a.degrees)));
+    } else {
+      throw 'Unhandled adjustment type ' + a.type;
     }
 
     accum = state.adjCombine(accum, r);
+    // accum = state.adjCombine(r, accum);
   }
 
   return accum;
