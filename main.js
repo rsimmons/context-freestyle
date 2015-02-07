@@ -81,9 +81,6 @@ function drawShapeCanvas(startShape, initXform, ctx) {
       ctx.setTransform(qsx[0], qsx[1], qsx[2], qsx[3], qsx[4], qsx[5]);
       for (var j = 0; j < r.prims.length; j++) {
         var prim = r.prims[j];
-        // TODO: ctx.save(), apply transform for this prim
-        // TODO: draw r.prims[j]
-        // HACK: for now, always just draw an un-transformed unit square
         var b = Math.floor(255*q.state.brightness);
         ctx.fillStyle = 'rgb(x,x,x)'.replace(/x/g, b.toString()); // faster than building with +
 
@@ -111,7 +108,6 @@ function drawShapeCanvas(startShape, initXform, ctx) {
         }
 
         primCount += 1;
-        // TODO: ctx.restore()
       }
 
       for (var j = 0; j < r.nonprims.length; j++) {
