@@ -5,77 +5,6 @@ var cfdg2Importer = require('./importer/cfdg2');
 
 // based on this from http://blog.hvidtfeldts.net/index.php/2008/12/grammars-for-generative-art-part-ii/
 // order of xforms in rules is ignored, always made to be translate/rotate/scale/skew/flip
-/*
-startshape SEED1
-
-rule SEED1 {
- SQUARE{}
- SEED1 {y 1.2 size 0.99 rotate 1.5 brightness 0.009}
-}
-
-rule SEED1 0.04 {
- SQUARE{}
- SEED1 {y 1.2 s 0.9 r 1.5 flip 90}
- SEED1 {y 1.2 x 1.2 s 0.8 r -60}
- SEED1 {y 1.2 x -1.2 s 0.6 r 60  flip 90}
-}
-*/
-
-// {{1, 0, 0}, {0, 1, 1.2}, {0, 0, 1}} . {{0.999657, -0.0262, 0}, {0.0262, 0.999657, 0}, {0, 0, 1}} . {{0.99, 0, 0}, {0, 0.99, 0}, {0, 0, 1}}
-// {{1, 0, 0}, {0, 1, 1.2}, {0, 0, 1}} . {{cos(1.5*π/180), -sin(1.5*π/180)}, {sin(1.5*π/180), cos(1.5*π/180)}} . {{0.99, 0, 0}, {0, 0.99, 0}, {0, 0, 1}}
-
-// formulas for transforming CFDG brightness values to ours, where b is CDFG value:
-// bMult = (1 - b)
-// bOff = b > 0 ? b : 0
-
-var testShape = [];
-
-testShape.push({
-  weight: 1,
-  prims: [null],
-  nonprims: [
-    {
-      adj: {
-        xform: vec2A.mmMult(vec2A.mTrans(0, 1.2), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mScale(0.99, 0.99))),
-        bMult: (1 - 0.009),
-        bOff: 0.009,
-      },
-      shape: testShape,
-    },
-  ],
-});
-
-testShape.push({
-  weight: 0.04,
-  prims: [null],
-  nonprims: [
-    {
-      adj: {
-        xform: vec2A.mmMult(vec2A.mTrans(0, 1.2), vec2A.mmMult(vec2A.mRotDeg(1.5), vec2A.mScale(-0.9, 0.9))),
-        bMult: 1,
-        bOff: 0,
-      },
-      shape: testShape,
-    },
-    {
-      adj: {
-        xform: vec2A.mmMult(vec2A.mTrans(1.2, 1.2), vec2A.mmMult(vec2A.mRotDeg(-60), vec2A.mScale(0.8, 0.8))),
-        bMult: 1,
-        bOff: 0,
-      },
-      shape: testShape,
-    },
-    {
-      adj: {
-        xform: vec2A.mmMult(vec2A.mTrans(-1.2, 1.2), vec2A.mmMult(vec2A.mRotDeg(60), vec2A.mScale(-0.6, 0.6))),
-        bMult: 1,
-        bOff: 0,
-      },
-      shape: testShape,
-    },
-  ],
-});
-
 var importTestShape = cfdg2Importer.importGrammar('\
 startshape SEED1\n\
 \n\
@@ -91,7 +20,8 @@ rule SEED1 0.04 {\n\
  SEED1 {y 1.2 x -1.2 s 0.6 r 60 flip 90}\n\
 }\n\
 ').grammar.startShape;
-testShape = importTestShape;
+
+var currentShape;
 
 function pickRule(shape) {
   var total = 0;
@@ -186,22 +116,53 @@ function drawShapeCanvas(startShape, initXform, ctx) {
   console.log('primitives per second:', Math.floor(primCount/elapsedTime));
 }
 
+function resizeCanvas() {
+  var canvas = document.getElementById('canvas');
+  var cParent = canvas.parentNode;
+  canvas.width = cParent.clientWidth;
+  canvas.height = cParent.clientHeight;
+  // canvas.width = document.documentElement.clientWidth;
+  // canvas.height = document.documentElement.clientHeight;
+  console.log('resized canvas to', canvas.width, 'by', canvas.height);
+}
+
 function redraw() {
   var canvas = document.getElementById('canvas');
+
   var ctx = canvas.getContext('2d');
+
+  // clear
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   ctx.strokeStyle = 'none';
   // ctx.fillStyle = 'black';
 
-  var initXform = vec2A.mmMult(vec2A.mTrans(0.5*canvas.width, canvas.height), vec2A.mScale(5, -5));
+  // var initXform = vec2A.mmMult(vec2A.mTrans(0.5*canvas.width, canvas.height), vec2A.mScale(5, -5));
+  var initXform = vec2A.mmMult(vec2A.mTrans(0.5*canvas.width, 0.5*canvas.height), vec2A.mScale(5, -5));
 
-  drawShapeCanvas(testShape, initXform, ctx);
+  drawShapeCanvas(currentShape, initXform, ctx);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('canvas').addEventListener('click', function() {
+    redraw();
+  });
+
+  window.addEventListener('resize', function() {
+    resizeCanvas();
+  }, false);
+
+  document.getElementById('button-run').addEventListener('click', function() {
+    var code = document.getElementById('code-textarea').value;
+    var parseResult = cfdg2Importer.importGrammar(code);
+    currentShape = parseResult.grammar.startShape;
+    redraw();
+  }, false);
+
+  resizeCanvas();
+
+  currentShape = importTestShape;
   redraw();
 });
 
-document.addEventListener('click', function() {
-  redraw();
-});
