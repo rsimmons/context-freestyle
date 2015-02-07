@@ -2145,6 +2145,11 @@ module.exports = (function() {
 
 var vec2A = require('./vec2A');
 var cfdg2Importer = require('./importer/cfdg2');
+var primTypes = require('./primTypes');
+
+var TWOPI = 2*Math.PI;
+var TRI_TOP_Y = 1/Math.sqrt(3);
+var TRI_SIDE_Y = -Math.sqrt(3)/6;
 
 // based on this from http://blog.hvidtfeldts.net/index.php/2008/12/grammars-for-generative-art-part-ii/
 // order of xforms in rules is ignored, always made to be translate/rotate/scale/skew/flip
@@ -2218,12 +2223,36 @@ function drawShapeCanvas(startShape, initXform, ctx) {
 
       ctx.setTransform(qsx[0], qsx[1], qsx[2], qsx[3], qsx[4], qsx[5]);
       for (var j = 0; j < r.prims.length; j++) {
+        var prim = r.prims[j];
         // TODO: ctx.save(), apply transform for this prim
         // TODO: draw r.prims[j]
         // HACK: for now, always just draw an un-transformed unit square
         var b = Math.floor(255*q.state.brightness);
         ctx.fillStyle = 'rgb(x,x,x)'.replace(/x/g, b.toString()); // faster than building with +
-        ctx.fillRect(-0.5, -0.5, 1, 1);
+
+        switch (prim.primType) {
+          case primTypes.SQUARE:
+            ctx.fillRect(-0.5, -0.5, 1, 1);
+            break;
+
+          case primTypes.CIRCLE:
+            ctx.beginPath();
+            ctx.arc(0, 0, 0.5, 0, TWOPI);
+            ctx.fill();
+            break;
+
+          case primTypes.TRIANGLE:
+            ctx.beginPath();
+            ctx.moveTo(0, TRI_TOP_Y);
+            ctx.lineTo(0.5, TRI_SIDE_Y);
+            ctx.lineTo(-0.5, TRI_SIDE_Y);
+            ctx.fill();
+            break;
+
+          default:
+            throw "unsupported primitive type";
+        }
+
         primCount += 1;
         // TODO: ctx.restore()
       }
@@ -2310,7 +2339,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-},{"./importer/cfdg2":"/Users/russ/Projects/context-freestyle/importer/cfdg2/index.js","./vec2A":"/Users/russ/Projects/context-freestyle/vec2A.js"}],"/Users/russ/Projects/context-freestyle/primTypes.js":[function(require,module,exports){
+},{"./importer/cfdg2":"/Users/russ/Projects/context-freestyle/importer/cfdg2/index.js","./primTypes":"/Users/russ/Projects/context-freestyle/primTypes.js","./vec2A":"/Users/russ/Projects/context-freestyle/vec2A.js"}],"/Users/russ/Projects/context-freestyle/primTypes.js":[function(require,module,exports){
 'use strict';
 
 module.exports = {
